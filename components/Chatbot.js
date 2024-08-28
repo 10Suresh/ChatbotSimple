@@ -25,7 +25,6 @@ const Chatbot = () => {
         },
         body: JSON.stringify({ question }),
       });
-
       const data = await response.json();
       if (response.ok) {
         const botMessage = { sender: 'bot', message: data.response };
