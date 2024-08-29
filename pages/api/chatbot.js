@@ -43,13 +43,14 @@ console.log(text,"text query")
 // Placeholder function to load or train a model
 const loadOrTrainModel = async (pdfWords) => {
   const model = tf.sequential();
+  console.log(model,"model")
   model.add(tf.layers.dense({ units: 128, inputShape: [10], activation: 'relu' }));
   model.add(tf.layers.dense({ units: 64, activation: 'relu' }));
   model.add(tf.layers.dense({ units: pdfWords.length, activation: 'softmax' }));
   model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
 
   // Prepare training data
-  const xs = tf.randomNormal([100, 10]);
+  const xs = tf.randomNormal([100, 10]); 
   const ys = tf.oneHot(tf.randomUniform([100], 0, pdfWords.length, 'int32'), pdfWords.length);
   
   await model.fit(xs, ys, { epochs: 10 });
@@ -65,9 +66,10 @@ const predictResponse = async (model, queryProcessed) => {
 }; 
 
 // Function to generate a coherent response
-const generateResponse = (pdfWords, responseIndex, contextSize = 10) => {
+const generateResponse = (pdfWords, responseIndex, contextSize = 30) => {
   const start = Math.max(0, responseIndex - Math.floor(contextSize / 2));
   const end = Math.min(pdfWords.length, responseIndex + Math.ceil(contextSize / 2));
+  console.log(end,"end content")
   return pdfWords.slice(start, end).join(' ');
 };
 
@@ -83,6 +85,7 @@ export default async function handler(req, res) {
        console.log(queryProcessed,"queryProcessed")
       const model = await loadOrTrainModel(pdfWords);
       const responseIndex = await predictResponse(model, [queryProcessed]);
+      console.log(responseIndex,"responseIndex")
       let response;
       if (typeof responseIndex !== 'number' || responseIndex < 0 || responseIndex >= pdfWords.length || !pdfWords[responseIndex]) {
         response = 'I have no answer for this question. Please ask another question.';
